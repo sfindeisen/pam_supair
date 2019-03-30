@@ -19,8 +19,8 @@ auth   sufficient   pam_supair.so alice,bob:root,charlie charlie:bob debug
 
 This specifies that users `alice` and `bob` can each do passwordless `su` to
 users `root` and `charlie`. User `charlie` can do passwordless `su` to user
-`bob`. The optional `debug` parameter is present `=>` some info will be
-logged via `pam_syslog(3)`.
+`bob`. The optional `debug` parameter is present `=>` the operation will be
+logged by syslog.
 
 In your Bash-like shell you can then type:
 
@@ -30,3 +30,8 @@ charlie@localhost $
 ```
 
 Voila!
+
+## Installation
+
+This requires PAM development C headers to compile. On a Debian-like system
+they are contained in `libpam-dev` package.
