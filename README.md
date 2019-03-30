@@ -6,9 +6,8 @@ human user switches frequently between multiple system users to perform
 various tasks.
 
 pam_supair is a PAM module for use with `su(1)` that authenticates the user
-if and only if that user's name (obtained via that user's real id) and `su`'s
-target user name (obtained via `pam_get_user(3)`) form a pair that is allowed
-by the configuration. Multiple user pairs can be specified.
+if and only if the current user and the target user form a pair that is
+allowed by the configuration. Multiple user pairs can be specified.
 
 ## Example
 
