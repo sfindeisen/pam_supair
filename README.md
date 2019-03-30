@@ -35,3 +35,11 @@ Voila!
 
 This requires PAM development C headers to compile. On a Debian-like system
 they are contained in `libpam-dev` package.
+
+Then:
+
+```shell
+make
+```
+
+Now copy the resulting `pam_supair.so` into your PAM module directory (`/lib/x86_64-linux-gnu/security/` on my machine) and edit your `/etc/pam.d/su` as required.
