@@ -9,6 +9,9 @@ pam_supair is a PAM module for use with `su(1)` that authenticates the user
 if and only if the current user and the target user form a pair that is
 allowed by the configuration. Multiple user pairs can be specified.
 
+Together with pam_xauth(8) this makes it easier to forward xauth keys
+between users.
+
 ## Example
 
 In `/etc/pam.d/su` :
