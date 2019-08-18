@@ -19,8 +19,8 @@ logged by syslog (each time).
 In your Bash-like shell you can then type:
 
 ```shell
-alice@localhost $ su - charlie
-charlie@localhost $
+alice@localhost$ su - charlie
+charlie@localhost$
 ```
 
 Voila!
