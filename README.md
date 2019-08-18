@@ -36,6 +36,6 @@ Then:
 make
 ```
 
-Now copy the resulting `pam_supair.so` into your PAM module directory
+Now copy the resulting `pam_supair.so` file into your PAM module directory
 (`/lib/x86_64-linux-gnu/security/` on my machine) and edit your
 `/etc/pam.d/su` as required.
