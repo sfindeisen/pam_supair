@@ -22,7 +22,7 @@ auth   sufficient   pam_supair.so alice,bob:root,charlie charlie:bob debug
 
 This specifies that users `alice` and `bob` can each do passwordless `su` to
 users `root` and `charlie`. User `charlie` can do passwordless `su` to user
-`bob`. The optional `debug` parameter is present `=>` the operation will be
+`bob`. The optional `debug` parameter is present => the operation will be
 logged by syslog.
 
 In your Bash-like shell you can then type:
