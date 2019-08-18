@@ -1,6 +1,6 @@
 # pam_supair
 
-A simple PAM module that allows `su(1)` without a password between specified
+A simple PAM module that allows `su(1)` without a password between configured
 pairs of users.
 
 ## Example
