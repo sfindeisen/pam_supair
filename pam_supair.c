@@ -2,7 +2,7 @@
  * pam_supair - a PAM module that allows passwordless su between
  * configurable pairs of users.
  *
- * Copyright (C) 2011 Stanislaw T. Findeisen <stf at eisenbits.com>
+ * Copyright (C) 2011-2026 Stanislaw Findeisen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,10 +16,6 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
- *
- * Change history
- *
- * 2011-06-27: STF: Initial version.
  */
 
 #include <stdlib.h>
