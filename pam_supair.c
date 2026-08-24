@@ -117,6 +117,7 @@ static char* getReqUserName(void) {
 
 /** Checks if there is a passwd entry for the username (name). */
 static short userExists (const pam_handle_t *pamh, const char *name) {
+    (void)pamh;
     struct passwd *pw = getpwnam(name);
     if (pw && (! strcmp(name, pw->pw_name)))
         return 1;
@@ -126,6 +127,7 @@ static short userExists (const pam_handle_t *pamh, const char *name) {
 /** Parses general command line options (like debug etc.). */
 static void parseArgs (const pam_handle_t *pamh, int argc, const char **argv)
 {
+    (void)pamh;
     for (; (0 <= --argc); ++argv) {
         if (! strcmp(*argv, "debug")) {
             wantDebug = 1;
@@ -164,6 +166,8 @@ PAM_EXTERN int pam_sm_authenticate (pam_handle_t *pamh, int flags, int argc, con
     const char* targetUser = NULL;
     char* reqUser = NULL;
 
+    (void)flags;
+
     // parse generic options (debug etc.)
     parseArgs(pamh, argc, argv);
 
@@ -200,6 +204,10 @@ PAM_EXTERN int pam_sm_authenticate (pam_handle_t *pamh, int flags, int argc, con
 }
 
 PAM_EXTERN int pam_sm_setcred (pam_handle_t *pamh, int flags, int argc, const char **argv) {
+    (void)pamh;
+    (void)flags;
+    (void)argc;
+    (void)argv;
     return PAM_SUCCESS;
 }
 
