@@ -29,14 +29,79 @@
 #include <sys/types.h>
 #include <pwd.h>
 
+/** These are used in command line arguments. */
+static const char DelimPair = ':';
+static const char DelimUser = ',';
+
+/*
+ * The functions below (down to the PAM_SUPAIR_UNIT_TEST guard) are pure
+ * ISO C and free of any PAM dependency, so they can be unit tested
+ * without libpam; see test_supair.c.
+ */
+
+/**
+ * Checks whether name occurs as a whole, comma-delimited token within the
+ * first len bytes of list. Matching is exact: substrings never match
+ * (e.g. "ali" does not match the token "alice"). Returns 1 on match, else 0.
+ */
+static int nameInList(const char *list, size_t len, const char *name) {
+    size_t nameLen = strlen(name);
+    size_t i = 0;
+
+    if (0 == nameLen)   /* an empty user name never matches */
+        return 0;
+
+    while (i < len) {
+        size_t j = i;
+        while ((j < len) && (DelimUser != list[j]))
+            ++j;
+        if (((j - i) == nameLen) && (0 == memcmp(list + i, name, nameLen)))
+            return 1;
+        i = j + 1;      /* skip the DelimUser separator */
+    }
+
+    return 0;
+}
+
+/**
+ * Matches a single command line pair argument of the form
+ * "req1,req2,...:targ1,targ2,..." against the ordered pair
+ * (reqName, targName).
+ *
+ * Returns 1 if reqName is an exact member of the requester list and
+ * targName is an exact member of the target list; 0 if the argument is
+ * well formed but the pair is not present; -1 if the argument is malformed
+ * (it must contain exactly one DelimPair separator).
+ */
+static int matchPairArg(const char *arg, const char *reqName, const char *targName) {
+    const char *colon = strchr(arg, DelimPair);
+
+    if ((NULL == colon) || (NULL != strchr(colon + 1, DelimPair)))
+        return -1;
+
+    if (nameInList(arg, (size_t)(colon - arg), reqName)
+            && nameInList(colon + 1, strlen(colon + 1), targName))
+        return 1;
+
+    return 0;
+}
+
+/** Checks if username (s) is sane (doesn't contain delimiters used in command line arguments). */
+static short isUserNameSane(const char *s) {
+    if (strchr(s, DelimPair))
+        return 0;
+    if (strchr(s, DelimUser))
+        return 0;
+    return 1;
+}
+
+#ifndef PAM_SUPAIR_UNIT_TEST
+
 #define PAM_SM_AUTH
 
 #include <security/pam_modules.h>
 #include <security/pam_ext.h>
 
-/** These are used in command line arguments. */
-static const char DelimPair = ':';
-static const char DelimUser = ',';
 static short wantDebug = 0;
 
 /**
@@ -58,15 +123,6 @@ static short userExists (const pam_handle_t *pamh, const char *name) {
     return 0;
 }
 
-/** Checks if username (s) is sane (doesn't contain delimiters used in command line arguments). */
-static short isUserNameSane(const char *s) {
-    if (index(s, DelimPair))
-        return 0;
-    if (index(s, DelimUser))
-        return 0;
-    return 1;
-}
-
 /** Parses general command line options (like debug etc.). */
 static void parseArgs (const pam_handle_t *pamh, int argc, const char **argv)
 {
@@ -82,36 +138,28 @@ static void parseArgs (const pam_handle_t *pamh, int argc, const char **argv)
 static short checkPair (const pam_handle_t *pamh, int argc, const char **argv, const char *reqName, const char *targName) {
     for (; (0 <= --argc); ++argv) {
         const char* as = *argv;
-        
+
         if (wantDebug)
             pam_syslog(pamh, LOG_DEBUG, "argv: %s", as);
 
-        const char* p1 =  index(as, DelimPair);
-        const char* p2 = rindex(as, DelimPair);
+        int r = matchPairArg(as, reqName, targName);
 
-        if (p1 && (p1 == p2)) {
-            const char* pr = strstr(as, reqName);
-            if (pr && (pr < p1)) {
-                const char* pt = strstr(as, targName);
-                for (; pt && pt <= p1; pt = strstr(1 + pt, targName));
-                if (pt && (p1 < pt)) {
-                    if (wantDebug)
-                        pam_syslog(pamh, LOG_DEBUG, "user pair (%s, %s) is found!", reqName, targName);
-                    return 1;
-                }
-            }
-        } else {
+        if (r < 0) {
             pam_syslog(pamh, LOG_ERR, "wrong argument: %s", as);
+        } else if (0 < r) {
+            if (wantDebug)
+                pam_syslog(pamh, LOG_DEBUG, "user pair (%s, %s) is found!", reqName, targName);
+            return 1;
         }
     }
-    
+
     return 0;
 }
 
 PAM_EXTERN int pam_sm_authenticate (pam_handle_t *pamh, int flags, int argc, const char **argv) {
     const char* targetUser = NULL;
     char* reqUser = NULL;
-    
+
     // parse generic options (debug etc.)
     parseArgs(pamh, argc, argv);
 
@@ -124,7 +172,7 @@ PAM_EXTERN int pam_sm_authenticate (pam_handle_t *pamh, int flags, int argc, con
             if ((reqUser = getReqUserName(pamh))) {
                 if (wantDebug)
                     pam_syslog(pamh, LOG_DEBUG, "req user: %s", reqUser);
-                
+
                 if (! strcmp(reqUser, targetUser)) {
                     // wrong usage!
                     free(reqUser);
@@ -148,3 +196,5 @@ PAM_EXTERN int pam_sm_authenticate (pam_handle_t *pamh, int flags, int argc, con
 PAM_EXTERN int pam_sm_setcred (pam_handle_t *pamh, int flags, int argc, const char **argv) {
     return PAM_SUCCESS;
 }
+
+#endif /* PAM_SUPAIR_UNIT_TEST */
