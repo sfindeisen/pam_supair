@@ -108,7 +108,7 @@ static short wantDebug = 0;
  * Returns the real user name. This memory is obtained with malloc,
  * so you might want to free it.
  */
-static char* getReqUserName() {
+static char* getReqUserName(void) {
     struct passwd *pw = getpwuid(getuid());
     if (pw)
         return strdup(pw->pw_name);
@@ -172,8 +172,10 @@ PAM_EXTERN int pam_sm_authenticate (pam_handle_t *pamh, int flags, int argc, con
             pam_syslog(pamh, LOG_DEBUG, "target user: %s", targetUser);
 
         if ((isUserNameSane(targetUser)) && (userExists(pamh, targetUser))) {
-            // TODO pam_get_item(... PAM_RUSER ...) instead??
-            if ((reqUser = getReqUserName(pamh))) {
+            // Identify the requester by the process' real uid rather than
+            // PAM_RUSER: for su(1) the real uid is the invoking user and
+            // cannot be spoofed, whereas PAM_RUSER is often unset.
+            if ((reqUser = getReqUserName())) {
                 if (wantDebug)
                     pam_syslog(pamh, LOG_DEBUG, "req user: %s", reqUser);
 
