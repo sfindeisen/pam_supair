@@ -139,6 +139,10 @@ static short checkPair (const pam_handle_t *pamh, int argc, const char **argv, c
     for (; (0 <= --argc); ++argv) {
         const char* as = *argv;
 
+        // generic options (parsed in parseArgs) are not user pairs
+        if (! strcmp(as, "debug"))
+            continue;
+
         if (wantDebug)
             pam_syslog(pamh, LOG_DEBUG, "argv: %s", as);
 
